@@ -65,6 +65,7 @@ void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 void StartUartSend(void * args);
+void StartUartReceive(void * args);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -103,7 +104,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  char hello[] = "UART Echo Ready.\r\n";
+  char hello[] = "UART Ready.\r\n";
   HAL_UART_Transmit(&huart1, (uint8_t*)hello, strlen(hello), 100);
 
   /* USER CODE END 2 */
@@ -135,6 +136,8 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   xTaskCreate(StartUartSend, "UART_TX", 256, NULL, 2, NULL);
+  xTaskCreate(StartUartReceive, "UART_RX", 256, NULL, 2, NULL);
+
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
@@ -250,6 +253,18 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void StartUartReceive(void *args) {
+    uint8_t rx_char;
+    for (;;) {
+        // Blocking receive 1 byte (wait forever)
+        if (HAL_UART_Receive(&huart1, &rx_char, 1, HAL_MAX_DELAY) == HAL_OK) {
+            // Send received byte to queue
+            xQueueSend(uartQueue, &rx_char, portMAX_DELAY);
+
+        }
+    }
+}
+
 void StartUartSend(void* args) {
     uint8_t tx_char;
     char msg_buffer[128]; // buffer to store all chars until the presence of \r\n
@@ -276,19 +291,6 @@ void StartUartSend(void* args) {
     }
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)  // uart receive interrupt handler
-{
-    if (huart->Instance == USART1)
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xQueueSendFromISR(uartQueue, &rx_char, &xHigherPriorityTaskWoken);
-
-        // Re-enable UART RX interrupt
-        HAL_UART_Receive_IT(&huart1, &rx_char, 1);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    }
-}
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -301,7 +303,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)  // uart receive interru
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-    HAL_UART_Receive_IT(&huart1, &rx_char, 1);
 
   /* Infinite loop */
   for(;;)
