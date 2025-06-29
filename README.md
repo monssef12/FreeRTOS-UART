@@ -1,20 +1,19 @@
-# FreeRTOS UART Echo Example
+# FreeRTOS UART Echo Example on STM32F4
 
 ## Overview
-This project demonstrates the use of FreeRTOS tasks and queues to implement a UART echo application on an STM32 microcontroller. It highlights how to handle UART communication in a multitasking environment without relying on interrupts.
+This project demonstrates the use of FreeRTOS tasks and queues to implement a UART echo(receive what send) application on an STM32f4 microcontroller. It highlights how to handle UART communication in a multitasking environment and without relying on interrupts.
 
 ## Features
 - FreeRTOS-based multitasking with separate tasks for UART reception and transmission  
-- Queue-based communication allowing safe data passing between tasks  
-- Blocking UART reception receiving data character-by-character in a dedicated task  
-- Buffered UART transmission accumulating characters until a complete message (terminated by carriage return and newline) is received, then sending the entire message back  
+- Queue-based communication allowing data passing between tasks  
+- Buffered UART transmission accumulating characters until a complete message (terminated by \r\n) is received, then sending the entire message back  
 - Simple, clean, and portable design for easy understanding and extension
 
 ## Project Structure
 - **main.c**: Initializes peripherals, creates FreeRTOS tasks, and starts the scheduler  
 - **StartUartReceive task**: Blocks on UART reception, pushing received bytes into a FreeRTOS queue  
 - **StartUartSend task**: Collects bytes from the queue, buffers them, and transmits complete messages upon detecting newline sequences  
-- **FreeRTOS queue**: Handles safe communication between receive and send tasks
+- **uartQueue queue**: Handles safe communication between receive and send tasks
 
 ## Usage
 Connect the STM32 UART pins to a serial terminal (such as Tera Term) configured for 115200 baud.  
