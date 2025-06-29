@@ -125,10 +125,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   uartQueue = xQueueCreate(QueueLength, sizeof(uint8_t));  // Create queue
-  char test_str[] = "hello send is working !\r\n";
-  for (uint32_t i = 0; i < strlen(test_str); i++) {
-      xQueueSend(uartQueue, &test_str[i], 0);  // Fill queue
-  }
 
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
@@ -254,20 +250,33 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-void StartUartSend(void* args){
+void StartUartSend(void* args) {
     uint8_t tx_char;
-    for(;;)
-    {
-        // Wait for character from queue
-        if (xQueueReceive(uartQueue, &tx_char, portMAX_DELAY) == pdPASS)
-        {
-            HAL_UART_Transmit(&huart1, &tx_char, 1, HAL_MAX_DELAY);
+    char msg_buffer[128]; // buffer to store all chars until the presence of \r\n
+    uint16_t index = 0;
+
+    for(;;) {
+        if (xQueueReceive(uartQueue, &tx_char, portMAX_DELAY) == pdPASS) { // check if uartQueue received something if yes put it in tx_char
+            // Store char in buffer
+            msg_buffer[index++] = tx_char;
+
+            // Check for \r\n at the end
+            if (index >= 2 &&
+                msg_buffer[index-2] == '\r' &&
+                msg_buffer[index-1] == '\n') {
+
+                // Send entire message at once
+                HAL_UART_Transmit(&huart1, (uint8_t*)msg_buffer, index, HAL_MAX_DELAY);
+
+                // Reset buffer
+                index = 0;
+            }
+
         }
     }
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)  // uart receive interrupt handler
 {
     if (huart->Instance == USART1)
     {
@@ -276,10 +285,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
         // Re-enable UART RX interrupt
         HAL_UART_Receive_IT(&huart1, &rx_char, 1);
-
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
