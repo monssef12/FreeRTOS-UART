@@ -1,4 +1,4 @@
-FreeRTOS UART Echo Example
+###FreeRTOS UART Echo Example
 Overview
 This project demonstrates the use of FreeRTOS tasks and queues to implement a UART echo application on an STM32 microcontroller. It highlights how to handle UART communication in a multitasking environment without relying on interrupts.
 
