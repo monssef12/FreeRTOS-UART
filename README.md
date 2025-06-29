@@ -1,7 +1,7 @@
 # FreeRTOS UART Echo Example on STM32F4
 
 ## Overview
-This project demonstrates the use of FreeRTOS tasks and queues to implement a UART echo(receive what send) application on an STM32f4 microcontroller. It highlights how to handle UART communication in a multitasking environment and without relying on interrupts.
+This project demonstrates the use of FreeRTOS tasks and queues to implement a UART echo(send back what received) application on an STM32f4 microcontroller. It highlights how to handle UART communication in a multitasking environment and without relying on interrupts.
 
 ## Features
 - FreeRTOS-based multitasking with separate tasks for UART reception and transmission  
