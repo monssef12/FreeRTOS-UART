@@ -105,7 +105,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   char hello[] = "UART Ready.\r\n";
-  HAL_UART_Transmit(&huart1, (uint8_t*)hello, strlen(hello), 100);
+  HAL_UART_Transmit(&huart1, (uint8_t*)hello, strlen(hello), 100); // init and testing message
 
   /* USER CODE END 2 */
 
@@ -135,6 +135,7 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
+ // The creation of the two tasks one receive the uart message and the other one send back 
   xTaskCreate(StartUartSend, "UART_TX", 256, NULL, 2, NULL);
   xTaskCreate(StartUartReceive, "UART_RX", 256, NULL, 2, NULL);
 
@@ -253,6 +254,8 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+// the implementation of the two tasks 
 void StartUartReceive(void *args) {
     uint8_t rx_char;
     for (;;) {
